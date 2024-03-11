@@ -3,6 +3,8 @@
 use core::fmt;
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
 
+use crate::{ray::Direction, utility::random_double};
+
 #[derive(Debug, Clone, Copy, PartialEq, Default)]
 pub struct Vec3<T: Copy> {
     x: T,
@@ -59,20 +61,38 @@ where
             z: self.z / length,
         }
     }
+    
 }
 
-// impl<T> Default for Vec3<T>
-// where
-//     T: Copy + Default,
-// {
-//     fn default() -> Vec3<T> {
-//         Vec3 {
-//             x: T::default(),
-//             y: T::default(),
-//             z: T::default(),
-//         }
-//     }
-// }
+impl Vec3<f64> {
+    pub fn random(min: f64, max: f64) -> Self {
+        Self {
+            x: random_double(min, max),
+            y: random_double(min, max),
+            z: random_double(min, max),
+        }
+    }
+    pub fn random_in_unit_shpere() -> Self {
+        loop {
+            let p = Vec3::random(-1.0, 1.0);
+            if p.length_squared() < 1.0 {
+                return p;
+            }
+        }
+    }
+    pub fn random_unit_vector() -> Self {
+        return Self::unit_vector(&Self::random_in_unit_shpere());
+    }
+
+    pub fn random_on_hemisphere(normal: &Direction) -> Self {
+        let on_unit_sphere = Self::random_unit_vector();
+        if on_unit_sphere.dot(*normal) > 0.0 {
+            on_unit_sphere
+        } else {
+            on_unit_sphere * -1.0        
+        }
+    }
+}
 
 pub trait Sqrt<T> {
     fn sqrt(&self) -> T;

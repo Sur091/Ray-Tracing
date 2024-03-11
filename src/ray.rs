@@ -18,6 +18,7 @@ impl Ray {
             direction: Direction::new(direction.x(), direction.y(), direction.z()),
         }
     }
+
     pub fn origin(&self) -> Point {
         self.origin
     }
@@ -28,12 +29,3 @@ impl Ray {
         self.origin + self.direction * t
     }
 }
-
-// impl Default for Ray {
-//     fn default() -> Self {
-//         Self {
-//             origin: Point::default(),
-//             direction: Point::default(),
-//         }
-//     }
-// }
