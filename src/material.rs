@@ -1,6 +1,7 @@
 use crate::color::Color;
 use crate::hittable::HitRecord;
 use crate::ray::{Direction, Ray};
+use crate::utility;
 
 pub trait Scatter {
     fn scatter(
@@ -126,6 +127,11 @@ impl Dielectric {
             ir: index_of_refraction,
         }
     }
+    fn reflectance(cosine: f64, ref_idx: f64) -> f64 {
+        let r0 = (1.0 - ref_idx) / (1.0 + ref_idx);
+        let r0 = r0 * r0;
+        return r0 + (1.0 - r0) * (1.0 - cosine).powi(5);
+    }
 }
 
 impl Scatter for Dielectric {
@@ -144,9 +150,20 @@ impl Scatter for Dielectric {
         };
 
         let unit_direction = r_in.direction().unit_vector();
-        let refracted = Direction::refract(&unit_direction, &rec.normal, refraction_ratio);
+        let cos_theta = 1.0f64.min(-(rec.normal.dot(unit_direction)));
+        let sin_theta = (1.0 - cos_theta * cos_theta).sqrt();
 
-        *scattered = Ray::new(&rec.p, &refracted);
+        let cannot_refract = refraction_ratio * sin_theta > 1.0;
+        let direction = if cannot_refract
+            || Dielectric::reflectance(cos_theta, refraction_ratio)
+                > utility::random_double(0.0, 1.0)
+        {
+            Direction::reflect(unit_direction, rec.normal)
+        } else {
+            Direction::refract(&unit_direction, &rec.normal, refraction_ratio)
+        };
+
+        *scattered = Ray::new(&rec.p, &direction);
 
         return true;
     }

@@ -25,30 +25,35 @@ fn main() {
     let mut world = HittableList::default();
 
     let material_groud = Material::lambertian(&Color::new(0.8, 0.8, 0.0));
-    let material_center = Material::dielectric(1.5);
+    let material_center = Material::lambertian(&Color::new(0.1, 0.2, 0.5));
     let material_left = Material::dielectric(1.5);
-    let material_right = Material::metal(&Color::new(0.8, 0.6, 0.2), 1.0);
+    let material_right = Material::metal(&Color::new(0.8, 0.6, 0.2), 0.0);
 
-    world.add(HittableObject::Sphere(Sphere::new(
+    world.add(HittableObject::sphere(
         Point::new(0.0, -100.5, -1.0),
         100.0,
         material_groud,
-    )));
-    world.add(HittableObject::Sphere(Sphere::new(
+    ));
+    world.add(HittableObject::sphere(
         Point::new(0.0, 0.0, -1.0),
         0.5,
         material_center,
-    )));
-    world.add(HittableObject::Sphere(Sphere::new(
+    ));
+    world.add(HittableObject::sphere(
         Point::new(-1.0, 0.0, -1.0),
         0.5,
+        material_left.clone(),
+    ));
+    world.add(HittableObject::sphere(
+        Point::new(-1.0, 0.0, -1.0),
+        -0.4,
         material_left,
-    )));
-    world.add(HittableObject::Sphere(Sphere::new(
+    ));
+    world.add(HittableObject::sphere(
         Point::new(1.0, 0.0, -1.0),
         0.5,
         material_right,
-    )));
+    ));
 
     let mut cam = Camera::default();
     cam.aspect_ratio = 16.0 / 9.0;

@@ -7,6 +7,12 @@ pub enum HittableObject {
     Sphere(Sphere),
 }
 
+impl HittableObject {
+    pub fn sphere(center: Point, radius: f64, mat: Material) -> Self {
+        Self::Sphere(Sphere::new(center, radius, mat))
+    }
+}
+
 impl Hittable for HittableObject {
     fn hit(&self, r: &Ray, ray_t: Interval, rec: &mut HitRecord) -> bool {
         match self {
