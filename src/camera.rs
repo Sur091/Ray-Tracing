@@ -1,9 +1,11 @@
 use crate::color::{self, Color};
 use crate::hittable::{HitRecord, Hittable};
+use crate::hittable_list::HittableList;
 use crate::interval::Interval;
+use crate::material::Scatter;
 use crate::ray::{Direction, Point, Ray};
-use indicatif::ProgressBar;
 use crate::utility;
+use indicatif::ProgressBar;
 
 #[derive(Default)]
 pub struct Camera {
@@ -18,7 +20,7 @@ pub struct Camera {
     pixel_delta_v: Direction,
 }
 impl Camera {
-    pub fn render(&mut self, world: &impl Hittable) {
+    pub fn render(&mut self, world: &HittableList) {
         self.initialize();
         // Render
         println!("P3");
@@ -31,7 +33,7 @@ impl Camera {
         for j in 0..self.image_height {
             pb.inc(1);
             for i in 0..self.image_width {
-                let mut pixel_color = Color::new(0.0,0.0,0.0);
+                let mut pixel_color = Color::new(0.0, 0.0, 0.0);
                 for _ in 0..(self.samples_per_pixel) {
                     let r: Ray = self.get_ray(i, j);
                     pixel_color += self.ray_color(&r, self.max_depth, world);
@@ -72,7 +74,9 @@ impl Camera {
     }
 
     fn get_ray(&self, i: i32, j: i32) -> Ray {
-        let pixel_center = self.pixel00_location + (self.pixel_delta_u * i as f64) + (self.pixel_delta_v * j as f64);
+        let pixel_center = self.pixel00_location
+            + (self.pixel_delta_u * i as f64)
+            + (self.pixel_delta_v * j as f64);
         let pixel_sample = pixel_center + self.pixel_sample_square();
 
         let ray_origin = self.center;
@@ -87,19 +91,23 @@ impl Camera {
         return self.pixel_delta_u * px + self.pixel_delta_v * py;
     }
 
-    fn ray_color(&self, ray: &Ray, depth: i32, world: &impl Hittable) -> Color {
+    fn ray_color(&self, ray: &Ray, depth: i32, world: &HittableList) -> Color {
         let mut rec = HitRecord::default();
 
         if depth <= 0 {
             return Color::new(0.0, 0.0, 0.0);
         }
         if world.hit(ray, Interval::new(0.001, f64::INFINITY), &mut rec) {
-            let direction = Direction::random_on_hemisphere(&rec.normal);
-            return self.ray_color(&Ray::new(&rec.p, &direction), depth-1, world) *0.5;
+            let mut scattered = Ray::default();
+            let mut attenuation = Color::default();
+            if rec.mat.scatter(ray, &rec, &mut attenuation, &mut scattered) {
+                return self.ray_color(&scattered, depth - 1, world) * attenuation;
+            }
+            return Color::new(0.0, 0.0, 0.0);
         }
 
         let unit_direction = ray.direction().unit_vector();
         let a = 0.5 * (unit_direction.y() + 1.0);
-        Color::new(1.0, 1.0, 1.0) * (1.0 - a) + Color::new(0.5, 0.7, 1.0) * a
+        return Color::new(1.0, 1.0, 1.0) * (1.0 - a) + Color::new(0.5, 0.7, 1.0) * a;
     }
 }

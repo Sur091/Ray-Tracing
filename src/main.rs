@@ -6,27 +6,51 @@ mod color;
 mod hittable;
 mod hittable_list;
 mod interval;
+mod material;
 mod ray;
 mod sphere;
-mod vec3;
 mod utility;
+mod vec3;
 
+use color::Color;
 use ray::Point;
 
-use crate::{hittable::HittableObject, hittable_list::HittableList, sphere::Sphere};
+use crate::hittable::HittableObject;
+use crate::hittable_list::HittableList;
+use crate::material::Material;
+use crate::sphere::Sphere;
 
 fn main() {
     // World
     let mut world = HittableList::default();
-    world.add(HittableObject::Sphere(Sphere::new(
-        Point::new(0.0, 0.0, -1.0),
-        0.5,
-    )));
+
+    let material_groud = Material::lambertian(&Color::new(0.8, 0.8, 0.0));
+    let material_center = Material::dielectric(1.5);
+    let material_left = Material::dielectric(1.5);
+    let material_right = Material::metal(&Color::new(0.8, 0.6, 0.2), 1.0);
+
     world.add(HittableObject::Sphere(Sphere::new(
         Point::new(0.0, -100.5, -1.0),
         100.0,
+        material_groud,
     )));
-    let mut cam: Camera = Camera::default();
+    world.add(HittableObject::Sphere(Sphere::new(
+        Point::new(0.0, 0.0, -1.0),
+        0.5,
+        material_center,
+    )));
+    world.add(HittableObject::Sphere(Sphere::new(
+        Point::new(-1.0, 0.0, -1.0),
+        0.5,
+        material_left,
+    )));
+    world.add(HittableObject::Sphere(Sphere::new(
+        Point::new(1.0, 0.0, -1.0),
+        0.5,
+        material_right,
+    )));
+
+    let mut cam = Camera::default();
     cam.aspect_ratio = 16.0 / 9.0;
     cam.image_width = 400;
     cam.samples_per_pixel = 100;

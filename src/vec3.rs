@@ -40,6 +40,7 @@ where
     pub fn length(&self) -> T {
         (self.x * self.x + self.y * self.y + self.z * self.z).sqrt()
     }
+
     pub fn normalize(&mut self) {
         *self /= self.length();
     }
@@ -61,7 +62,6 @@ where
             z: self.z / length,
         }
     }
-    
 }
 
 impl Vec3<f64> {
@@ -89,8 +89,21 @@ impl Vec3<f64> {
         if on_unit_sphere.dot(*normal) > 0.0 {
             on_unit_sphere
         } else {
-            on_unit_sphere * -1.0        
+            on_unit_sphere * -1.0
         }
+    }
+    pub fn reflect(v: Direction, n: Direction) -> Direction {
+        v - n * (2.0 * v.dot(n))
+    }
+    pub fn refract(uv: &Direction, n: &Direction, etai_over_etat: f64) -> Direction {
+        let cos_theta = 1.0f64.min(-uv.dot(*n));
+        let r_out_perpendicular = (*uv + *n * cos_theta) * etai_over_etat;
+        let r_out_parallel = *n * (-(1.0 - r_out_perpendicular.length_squared()).abs().sqrt());
+        return r_out_perpendicular + r_out_parallel;
+    }
+    pub fn near_zero(&self) -> bool {
+        const S: f64 = 1e-8;
+        (self.x.abs() < S) && (self.y.abs() < S) && (self.z.abs() < S)
     }
 }
 
@@ -162,9 +175,9 @@ impl<T: Copy + Mul<Output = T> + Sub<Output = T>> Mul for Vec3<T> {
     type Output = Self;
     fn mul(self, rhs: Self) -> Self::Output {
         Self {
-            x: self.y * rhs.z - self.z * rhs.y,
-            y: self.z * rhs.x - self.x * rhs.z,
-            z: self.x * rhs.y - self.y * rhs.x,
+            x: self.x * rhs.x,
+            y: self.y * rhs.y,
+            z: self.z * rhs.z,
         }
     }
 }
