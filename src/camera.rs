@@ -13,6 +13,7 @@ pub struct Camera {
     pub image_width: i32,
     pub samples_per_pixel: i32,
     pub max_depth: i32,
+    pub vfov: f64, // Vertical view angle
     image_height: i32,
     center: Point,
     pixel00_location: Point,
@@ -54,7 +55,9 @@ impl Camera {
 
         // Camera
         let focal_length = 1.0;
-        let viewport_height = 2.0;
+        let theta = self.vfov.to_radians();
+        let h = (theta / 2.0).tan();
+        let viewport_height = 2.0 * h * focal_length;
         let viewport_width = viewport_height * (self.image_width as f64 / self.image_height as f64);
         self.center = Point::new(0.0, 0.0, 0.0);
 
