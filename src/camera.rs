@@ -7,7 +7,7 @@ use crate::ray::{Direction, Point, Ray};
 use crate::utility;
 use indicatif::ProgressBar;
 
-#[derive(Default)]
+
 pub struct Camera {
     pub aspect_ratio: f64,
     pub image_width: i32,
@@ -26,6 +26,31 @@ pub struct Camera {
     v: Direction,
     w: Direction,
 }
+
+impl Default for Camera {
+    fn default() -> Self {
+        Self {
+            aspect_ratio: 1.0,
+            image_width: 100,
+            samples_per_pixel: 10,
+            max_depth: 10,
+            vfov: 90.0, // Vertical view angle
+            look_from: Point::new(0.0, 0.0, -1.0),
+            look_at: Point::new(0.0,0.0,0.0),
+            vup: Direction::new(0.0,1.0,0.0),
+            image_height: 100,
+            center: Point::new(0.0, 0.0, -1.0),
+            pixel00_location: Point::default(),
+            pixel_delta_u: Point::default(),
+            pixel_delta_v: Point::default(),
+            u: Point::default(),
+            v: Point::default(),
+            w: Point::default(),
+        }
+    }
+}
+
+
 impl Camera {
     pub fn render(&mut self, world: &HittableList) {
         self.initialize();
@@ -69,9 +94,14 @@ impl Camera {
         let viewport_width = viewport_height * (self.image_width as f64 / self.image_height as f64);
         // self.center = Point::new(0.0, 0.0, 0.0);
 
+        // Calculate the u,v,w unit basis vectors for the camera coordinate frame
+        self.w = (self.look_from - self.look_at).unit_vector();
+        self.u = (self.vup.cross(self.w)).unit_vector();
+        self.v = self.w.cross(self.u);
+
         // The vectors along the edges of the viewport
-        let viewport_u = Point::new(viewport_width, 0.0, 0.0);
-        let viewport_v = Point::new(0.0, -viewport_height, 0.0);
+        let viewport_u = self.u * viewport_width;
+        let viewport_v = self.v * (viewport_height * (-1.0));
 
         // Horizontal and vertical delta vectors from pixel to pixel.
         self.pixel_delta_u = viewport_u / self.image_width as f64;
@@ -79,7 +109,7 @@ impl Camera {
 
         // Calculate the location of the upper left pixel.
         let viewport_upper_left =
-            self.center - Point::new(0.0, 0.0, focal_length) - viewport_u / 2.0 - viewport_v / 2.0;
+            self.center - (self.w * focal_length) - viewport_u / 2.0 - viewport_v / 2.0;
         self.pixel00_location =
             viewport_upper_left + (self.pixel_delta_u + self.pixel_delta_v) * 0.5;
     }
