@@ -6,6 +6,7 @@ pub struct HittableList {
 }
 
 impl HittableList {
+    #![allow(unused)]
     pub fn new(object: HittableObject) -> Self {
         Self {
             objects: vec![object],

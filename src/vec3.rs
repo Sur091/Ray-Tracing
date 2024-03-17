@@ -105,6 +105,14 @@ impl Vec3<f64> {
         const S: f64 = 1e-8;
         (self.x.abs() < S) && (self.y.abs() < S) && (self.z.abs() < S)
     }
+    pub fn random_in_unit_disk() -> Self {
+        loop {
+            let p = Direction::new(random_double(-1.0, 1.0), random_double(-1.0, 1.0), 0.0);
+            if p.length_squared() < 1.0 {
+                return p;
+            }
+        }
+    }
 }
 
 pub trait Sqrt<T> {

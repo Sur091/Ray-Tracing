@@ -1,3 +1,6 @@
+// use std::intrinsics::mir::Discriminant;
+// use std::sync::PoisonError;
+
 use crate::color::{self, Color};
 use crate::hittable::{HitRecord, Hittable};
 use crate::hittable_list::HittableList;
@@ -17,6 +20,8 @@ pub struct Camera {
     pub look_from: Point,
     pub look_at: Point,
     pub vup: Direction,
+    pub defocus_angle: f64,
+    pub focus_dist: f64,
     image_height: i32,
     center: Point,
     pixel00_location: Point,
@@ -25,6 +30,8 @@ pub struct Camera {
     u: Direction,
     v: Direction,
     w: Direction,
+    defocus_disk_u: Direction,
+    defocus_disk_v: Direction,
 }
 
 impl Default for Camera {
@@ -38,6 +45,8 @@ impl Default for Camera {
             look_from: Point::new(0.0, 0.0, -1.0),
             look_at: Point::new(0.0,0.0,0.0),
             vup: Direction::new(0.0,1.0,0.0),
+            defocus_angle: 0.0,
+            focus_dist: 10.0,
             image_height: 100,
             center: Point::new(0.0, 0.0, -1.0),
             pixel00_location: Point::default(),
@@ -46,6 +55,8 @@ impl Default for Camera {
             u: Point::default(),
             v: Point::default(),
             w: Point::default(),
+            defocus_disk_u: Direction::default(),
+            defocus_disk_v: Direction::default(),
         }
     }
 }
@@ -87,10 +98,10 @@ impl Camera {
         self.center = self.look_from;
 
         // Camera
-        let focal_length = (self.look_from - self.look_at).length();
+        // let focal_length = (self.look_from - self.look_at).length();
         let theta = self.vfov.to_radians();
         let h = f64::tan(theta / 2.0);
-        let viewport_height = 2.0 * h * focal_length;
+        let viewport_height = 2.0 * h * self.focus_dist;
         let viewport_width = viewport_height * (self.image_width as f64 / self.image_height as f64);
         // self.center = Point::new(0.0, 0.0, 0.0);
 
@@ -109,21 +120,38 @@ impl Camera {
 
         // Calculate the location of the upper left pixel.
         let viewport_upper_left =
-            self.center - (self.w * focal_length) - viewport_u / 2.0 - viewport_v / 2.0;
+            self.center - (self.w * self.focus_dist) - viewport_u / 2.0 - viewport_v / 2.0;
         self.pixel00_location =
             viewport_upper_left + (self.pixel_delta_u + self.pixel_delta_v) * 0.5;
+
+        // Calculate the camera defocus disk basis vectors
+        let defocus_radius = self.focus_dist * f64::tan((self.defocus_angle / 2.0).to_radians());
+        self.defocus_disk_u = self.u * defocus_radius;
+        self.defocus_disk_v = self.v * defocus_radius;
     }
 
+
     fn get_ray(&self, i: i32, j: i32) -> Ray {
+        // Get a random ray originating form the camera defocus disk
         let pixel_center = self.pixel00_location
             + (self.pixel_delta_u * i as f64)
             + (self.pixel_delta_v * j as f64);
         let pixel_sample = pixel_center + self.pixel_sample_square();
 
-        let ray_origin = self.center;
+        let ray_origin = if self.defocus_angle <= 0.0 {
+            self.center
+        } else {
+            self.defocus_disk_sample()
+        };
         let ray_direction = pixel_sample - ray_origin;
 
         return Ray::new(&ray_origin, &ray_direction);
+    }
+
+    fn defocus_disk_sample(&self) -> Point {
+        // Returns a random point on the defocus disk sample
+        let p = Point::random_in_unit_disk();
+        return self.center + (self.defocus_disk_u * p.x()) + (self.defocus_disk_v * p.y());
     }
 
     fn pixel_sample_square(&self) -> Point {
