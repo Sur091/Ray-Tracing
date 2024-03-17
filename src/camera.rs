@@ -14,11 +14,17 @@ pub struct Camera {
     pub samples_per_pixel: i32,
     pub max_depth: i32,
     pub vfov: f64, // Vertical view angle
+    pub look_from: Point,
+    pub look_at: Point,
+    pub vup: Direction,
     image_height: i32,
     center: Point,
     pixel00_location: Point,
     pixel_delta_u: Direction,
     pixel_delta_v: Direction,
+    u: Direction,
+    v: Direction, 
+    w: Direction,
 }
 impl Camera {
     pub fn render(&mut self, world: &HittableList) {
@@ -53,17 +59,24 @@ impl Camera {
             self.image_height
         };
 
+        self.center = self.look_from;
+
         // Camera
-        let focal_length = 1.0;
+        let focal_length = (self.look_from - self.look_at).length();
         let theta = self.vfov.to_radians();
-        let h = (theta / 2.0).tan();
+        let h = f64::tan(theta / 2.0);
         let viewport_height = 2.0 * h * focal_length;
         let viewport_width = viewport_height * (self.image_width as f64 / self.image_height as f64);
-        self.center = Point::new(0.0, 0.0, 0.0);
+        // self.center = Point::new(0.0, 0.0, 0.0);
+
+        // Calculate u, v, w unit basis vectors for the camera coordinate frame.
+        self.w = (self.look_from - self.look_at).unit_vector();
+        self.u = (self.vup.cross(self.w)).unit_vector();
+        self.w = self.w.cross(self.u);
 
         // The vectors along the edges of the viewport
-        let viewport_u = Point::new(viewport_width, 0.0, 0.0);
-        let viewport_v = Point::new(0.0, -viewport_height, 0.0);
+        let viewport_u = self.u * viewport_width;
+        let viewport_v = self.v * (-viewport_height);
 
         // Horizontal and vertical delta vectors from pixel to pixel.
         self.pixel_delta_u = viewport_u / self.image_width as f64;
@@ -71,7 +84,7 @@ impl Camera {
 
         // Calculate the location of the upper left pixel.
         let viewport_upper_left =
-            self.center - Point::new(0.0, 0.0, focal_length) - viewport_u / 2.0 - viewport_v / 2.0;
+            self.center - (self.w*focal_length) - (viewport_u / 2.0) - (viewport_v / 2.0);
         self.pixel00_location =
             viewport_upper_left + (self.pixel_delta_u + self.pixel_delta_v) * 0.5;
     }

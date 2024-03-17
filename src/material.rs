@@ -23,11 +23,11 @@ pub enum Material {
 }
 
 impl Material {
-    pub fn lambertian(a: &Color) -> Self {
-        Self::Lambertian(Lambertian::new(a))
+    pub fn lambertian(a: Color) -> Self {
+        Self::Lambertian(Lambertian::new(&a))
     }
-    pub fn metal(a: &Color, f: f64) -> Self {
-        Self::Metal(Metal::new(a, f))
+    pub fn metal(a: Color, f: f64) -> Self {
+        Self::Metal(Metal::new(&a, f))
     }
     pub fn dielectric(index_of_refraction: f64) -> Self {
         Self::Dielectric(Dielectric::new(index_of_refraction))

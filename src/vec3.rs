@@ -47,7 +47,7 @@ where
     pub fn dot(self, other: Self) -> T {
         self.x * other.x() + self.y * other.y() + self.z * other.z()
     }
-    pub fn cross(self, other: Self) -> Self {
+    pub fn cross(&self, other: Self) -> Self {
         Vec3 {
             x: self.y * other.z - self.z * other.y,
             y: self.z * other.x - self.x * other.z,
@@ -266,7 +266,7 @@ mod test {
         let p1 = Vec3::new(1.1, 2.2, 2.2);
         let p2 = Vec3::new(5.1, 1.2, 3.2);
 
-        assert_eq!(p1 * p2, Vec3::new(4.4, 7.7, -9.9));
+        assert_eq!(p1 * p2, Vec3::new(1.1*5.1, 2.2*1.2, 2.2*3.2));
     }
     #[test]
     fn vec3_scalar_multiplication_inline() {
@@ -315,5 +315,10 @@ mod test {
         let p2 = Vec3::new(5.1, 1.2, 3.2);
 
         assert_eq!(p1.cross(p2), Vec3::new(4.4, 7.7, -9.9));
+
+        let p3 = Vec3::new(1.0, 2.0, 3.0);
+        let p4 = Vec3::new(1.0, 5.0, 7.0);
+
+        assert_eq!(p3.cross(p4), Vec3::new(-1.0, -4.0, 3.0))
     }
 }
