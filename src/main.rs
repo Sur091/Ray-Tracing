@@ -63,7 +63,7 @@ fn main() {
     cam.max_depth = 50;
 
 
-    cam.vfov = 90.0;
+    cam.vfov = 200.0;
 
     cam.render(&world);
 }
