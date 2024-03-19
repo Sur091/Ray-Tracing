@@ -9,7 +9,10 @@ pub enum HittableObject {
 
 impl HittableObject {
     pub fn sphere(center: Point, radius: f64, mat: Material) -> Self {
-        Self::Sphere(Sphere::new(center, radius, mat))
+        Self::Sphere(Sphere::new(center, center, radius, mat))
+    }
+    pub fn moving_sphere(center1: Point, center2: Point, radius: f64, mat: Material) -> Self{
+        Self::Sphere(Sphere::new(center1, center2, radius, mat))
     }
 }
 
@@ -17,6 +20,7 @@ impl Hittable for HittableObject {
     fn hit(&self, r: &Ray, ray_t: Interval, rec: &mut HitRecord) -> bool {
         match self {
             HittableObject::Sphere(sphere) => sphere.hit(r, ray_t, rec),
+            // HittableObject::Cube(cub) => cub.hit(r, ray_t, rec)
         }
     }
 }

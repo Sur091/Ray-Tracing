@@ -9,13 +9,15 @@ pub type Direction = vec3::Vec3<f64>;
 pub struct Ray {
     origin: Point,
     direction: Direction,
+    time: f64,
 }
 
 impl Ray {
-    pub fn new(origin: &Point, direction: &Direction) -> Self {
+    pub fn new(origin: Point, direction: Direction, time: f64) -> Self {
         Self {
-            origin: Point::new(origin.x(), origin.y(), origin.z()),
-            direction: Direction::new(direction.x(), direction.y(), direction.z()),
+            origin,
+            direction,
+            time
         }
     }
 
@@ -24,6 +26,9 @@ impl Ray {
     }
     pub fn direction(&self) -> Direction {
         self.direction
+    }
+    pub fn time(&self) -> f64 {
+        self.time
     }
     pub fn at(&self, t: f64) -> Point {
         self.origin + self.direction * t

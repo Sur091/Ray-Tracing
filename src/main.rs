@@ -1,7 +1,4 @@
 mod camera;
-use std::process::Command;
-
-use camera::Camera;
 mod color;
 mod hittable;
 mod hittable_list;
@@ -12,13 +9,13 @@ mod sphere;
 mod utility;
 mod vec3;
 
+
+use camera::Camera;
 use color::Color;
 use ray::{Direction, Point};
-use utility::random_double;
-
-use crate::hittable::HittableObject;
-use crate::hittable_list::HittableList;
-use crate::material::Material;
+use hittable::HittableObject;
+use hittable_list::HittableList;
+use material::Material;
 
 fn main() {
     // World
@@ -36,22 +33,23 @@ fn main() {
                 b as f64 + 0.9*utility::random_double(0.0, 1.0)
             );
             if (center - Point::new(4.0, 0.2, 0.0)).length() > 0.9 {
-                let mut sphere_material = Material::default();
+                // let mut sphere_material = Material::default();
 
                 if choose_mat < 0.8 {
                     // diffuse
                     let albedo = Color::random(0.0, 1.0) * Color::random(0.0, 1.0);
-                    sphere_material = Material::lambertian(albedo);
-                    world.add(HittableObject::sphere(center, 0.2, sphere_material));
+                    let sphere_material = Material::lambertian(albedo);
+                    let center2 = center + Direction::new(0.0, utility::random_double(0.0, 0.5), 0.0);
+                    world.add(HittableObject::moving_sphere(center, center2, 0.2, sphere_material));
                 } else if choose_mat < 0.95{
                     // metal
                     let albedo = Color::random(0.5, 1.0);
-                    let fuzz = random_double(0.0, 0.5);
-                    sphere_material = Material::metal(albedo, fuzz);
+                    let fuzz = utility::random_double(0.0, 0.5);
+                    let sphere_material = Material::metal(albedo, fuzz);
                     world.add(HittableObject::sphere(center, 0.2, sphere_material));
                 } else {
                     // glass
-                    sphere_material = Material::dielectric(1.5);
+                    let sphere_material = Material::dielectric(1.5);
                     world.add(HittableObject::sphere(center, 0.2, sphere_material));
                 }
             }
@@ -84,8 +82,8 @@ fn main() {
 
     let mut cam = Camera::default();
     cam.aspect_ratio = 16.0 / 9.0;
-    cam.image_width = 1200;
-    cam.samples_per_pixel = 500;
+    cam.image_width = 400;
+    cam.samples_per_pixel = 100;
     cam.max_depth = 50;
 
 
