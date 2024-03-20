@@ -1,55 +1,17 @@
+mod hit_record;
+mod hittable_list;
+mod hittable_object;
+
+pub use hit_record::HitRecord;
+pub use hittable_list::HittableList;
+pub use hittable_object::bvh_node::BvhNode;
+pub use hittable_object::HittableObject;
+
+use crate::aabb::Aabb;
 use crate::interval::Interval;
-use crate::material::Material;
-use crate::ray::{Direction, Point, Ray};
-use crate::sphere::Sphere;
+use crate::ray::Ray;
 
-pub enum HittableObject {
-    Sphere(Sphere),
-}
-
-impl HittableObject {
-    pub fn sphere(center: Point, radius: f64, mat: Material) -> Self {
-        Self::Sphere(Sphere::new(center, center, radius, mat))
-    }
-    pub fn moving_sphere(center1: Point, center2: Point, radius: f64, mat: Material) -> Self{
-        Self::Sphere(Sphere::new(center1, center2, radius, mat))
-    }
-}
-
-impl Hittable for HittableObject {
-    fn hit(&self, r: &Ray, ray_t: Interval, rec: &mut HitRecord) -> bool {
-        match self {
-            HittableObject::Sphere(sphere) => sphere.hit(r, ray_t, rec),
-            // HittableObject::Cube(cub) => cub.hit(r, ray_t, rec)
-        }
-    }
-}
 pub trait Hittable {
-    fn hit(&self, r: &Ray, ray_t: Interval, rec: &mut HitRecord) -> bool;
-}
-
-#[derive(Debug, Default, Clone)]
-pub struct HitRecord {
-    pub p: Point,
-    pub normal: Direction,
-    pub mat: Material,
-    pub t: f64,
-    pub front_face: bool,
-}
-
-// impl Material for HitRecord {
-
-// }
-
-impl HitRecord {
-    pub fn set_face_normal(&mut self, ray: &Ray, outward_normal: &Direction) {
-        // Sets the hit record normal vector
-        // NOTE: parameter outward_normal is assumed to have unit length
-        self.front_face = ray.direction().dot(*outward_normal) < 0.0;
-        self.normal = if self.front_face {
-            *outward_normal
-        } else {
-            (*outward_normal) * (-1.0)
-        }
-    }
+    fn hit(&self, r: &Ray, ray_t: Interval, rec: &mut hit_record::HitRecord) -> bool;
+    fn bounding_box(&self) -> &Aabb;
 }

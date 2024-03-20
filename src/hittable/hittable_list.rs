@@ -1,8 +1,11 @@
+use crate::aabb::Aabb;
 use crate::hittable::{HitRecord, Hittable, HittableObject};
 use crate::interval::Interval;
 
+#[derive(Default)]
 pub struct HittableList {
-    objects: Vec<HittableObject>,
+    pub objects: Vec<HittableObject>,
+    bbox: Aabb,
 }
 
 impl HittableList {
@@ -10,18 +13,15 @@ impl HittableList {
     pub fn new(object: HittableObject) -> Self {
         Self {
             objects: vec![object],
+            bbox: Aabb::default(),
         }
     }
     pub fn add(&mut self, object: HittableObject) {
+        self.bbox = Aabb::new_with_boxes(self.bounding_box(), object.bounding_box());
         self.objects.push(object);
     }
-}
-
-impl Default for HittableList {
-    fn default() -> Self {
-        Self {
-            objects: Vec::new(),
-        }
+    pub fn objects(&mut self) -> &mut [HittableObject] {
+        &mut self.objects
     }
 }
 
@@ -42,6 +42,9 @@ impl Hittable for HittableList {
                 *rec = temp_record.clone();
             }
         }
-        return hit_anything;
+        hit_anything
+    }
+    fn bounding_box(&self) -> &Aabb {
+        &self.bbox
     }
 }

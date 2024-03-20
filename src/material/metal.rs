@@ -1,16 +1,17 @@
-use crate::material::Scatter;
-use crate::hittable::HitRecord;
-use crate::ray::{Direction, Ray};
 use crate::color::Color;
+use crate::hittable::HitRecord;
+use crate::material::Scatter;
+use crate::ray::Ray;
+use crate::{random, utility};
 
 #[derive(Debug, Clone, Default)]
 pub struct Metal {
     albedo: Color,
-    fuzz: f64,
+    fuzz: f32,
 }
 
 impl Metal {
-    pub fn new(a: &Color, f: f64) -> Self {
+    pub fn new(a: &Color, f: f32) -> Self {
         Self {
             albedo: *a,
             fuzz: if f < 1.0 { f } else { 1.0 },
@@ -26,13 +27,13 @@ impl Scatter for Metal {
         attenuation: &mut Color,
         scattered: &mut Ray,
     ) -> bool {
-        let reflected = Direction::reflect(Direction::unit_vector(&r_in.direction()), rec.normal);
+        let reflected = utility::reflect(r_in.direction().normalize(), rec.normal);
         *scattered = Ray::new(
             rec.p,
-            reflected + Direction::random_unit_vector() * self.fuzz,
+            reflected + random::unit_vector() * self.fuzz,
             r_in.time(),
         );
         *attenuation = self.albedo;
-        return scattered.direction().dot(rec.normal) > 0.0;
+        scattered.direction().dot(rec.normal) > 0.0
     }
 }

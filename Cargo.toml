@@ -8,3 +8,15 @@ edition = "2021"
 [dependencies]
 indicatif = "0"
 rand = "0"
+glam = "0"
+
+
+# [profile.release]
+# codegen-units = 1
+# lto = "fat"
+# panic = "abort"
+# strip = "debuginfo"
+
+
+# [build]
+# rustflags = ["-C", "target-cpu=native"]

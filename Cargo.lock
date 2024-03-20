@@ -39,6 +39,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "glam"
+version = "0.26.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bebe52f2c58f1eea4d6fd3307058cf818c74181435a3620502d1651db07ff018"
+
+[[package]]
 name = "indicatif"
 version = "0.17.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -124,6 +130,7 @@ dependencies = [
 name = "raytracin"
 version = "0.1.0"
 dependencies = [
+ "glam",
  "indicatif",
  "rand",
 ]

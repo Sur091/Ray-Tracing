@@ -1,3 +1,4 @@
+use crate::aabb::Aabb;
 use crate::hittable::{HitRecord, Hittable};
 use crate::interval::Interval;
 use crate::material::Material;
@@ -6,37 +7,45 @@ use crate::ray::{Direction, Point, Ray};
 #[derive(Debug, Clone)]
 pub struct Sphere {
     center1: Point,
-    radius: f64,
+    radius: f32,
     mat: Material,
     is_moving: bool,
     center_vec: Direction,
+    bbox: Aabb,
 }
 
 impl Sphere {
-    pub fn new(center1: Point, center2: Point, radius: f64, mat: Material) -> Self {
-        let center_vec = center2-center1;
+    pub fn new(center1: Point, center2: Point, radius: f32, mat: Material, bbox: Aabb) -> Self {
+        let center_vec = center2 - center1;
         Self {
             center1,
             radius,
             mat,
             center_vec,
-            is_moving: !center_vec.near_zero(),
+            is_moving: !center_vec.abs_diff_eq(Point::new(0.0, 0.0, 0.0), 1e-8),
+            bbox,
         }
     }
-    fn center(&self, time: f64) -> Point {
-        return  self.center1 + self.center_vec * time;
+    fn center(&self, time: f32) -> Point {
+        self.center1 + self.center_vec * time
     }
 }
 
 impl Hittable for Sphere {
     fn hit(&self, ray: &Ray, ray_t: Interval, rec: &mut HitRecord) -> bool {
-        let center = if self.is_moving {self.center(ray.time())} else {self.center1};
+        let center = if self.is_moving {
+            self.center(ray.time())
+        } else {
+            self.center1
+        };
         let oc = ray.origin() - center;
         let a = ray.direction().length_squared();
         let half_b = oc.dot(ray.direction());
-        let c = oc.length_squared() - self.radius * self.radius;
+        // let c = oc.length_squared() - self.radius * self.radius;
+        let c = self.radius.mul_add(-self.radius, oc.length_squared());
 
-        let discriminant = half_b * half_b - a * c;
+        // let discriminant = half_b * half_b - a * c;
+        let discriminant = half_b.mul_add(half_b, -a * c);
         if discriminant < 0.0 {
             return false;
         }
@@ -57,6 +66,9 @@ impl Hittable for Sphere {
         rec.set_face_normal(ray, &outward_normal);
         rec.mat = self.mat.clone();
 
-        return true;
+        true
+    }
+    fn bounding_box(&self) -> &Aabb {
+        &self.bbox
     }
 }

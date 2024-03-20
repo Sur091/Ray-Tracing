@@ -1,36 +1,36 @@
 #![allow(dead_code)]
 
-use crate::vec3;
+use glam::Vec3;
 
-pub type Point = vec3::Vec3<f64>;
-pub type Direction = vec3::Vec3<f64>;
+pub type Point = Vec3;
+pub type Direction = Vec3;
 
 #[derive(Debug, Default)]
 pub struct Ray {
     origin: Point,
     direction: Direction,
-    time: f64,
+    time: f32,
 }
 
 impl Ray {
-    pub fn new(origin: Point, direction: Direction, time: f64) -> Self {
+    pub const fn new(origin: Point, direction: Direction, time: f32) -> Self {
         Self {
             origin,
             direction,
-            time
+            time,
         }
     }
 
-    pub fn origin(&self) -> Point {
+    pub const fn origin(&self) -> Point {
         self.origin
     }
-    pub fn direction(&self) -> Direction {
+    pub const fn direction(&self) -> Direction {
         self.direction
     }
-    pub fn time(&self) -> f64 {
+    pub const fn time(&self) -> f32 {
         self.time
     }
-    pub fn at(&self, t: f64) -> Point {
+    pub fn at(&self, t: f32) -> Point {
         self.origin + self.direction * t
     }
 }
