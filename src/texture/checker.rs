@@ -5,7 +5,7 @@ use crate::{color::Color, ray::Point};
 pub struct Checker {
     inv_scale: f32,
     even: Box<Texture>,
-    odd: Box<Texture>
+    odd: Box<Texture>,
 }
 
 impl Checker {

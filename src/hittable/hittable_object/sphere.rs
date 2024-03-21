@@ -63,7 +63,7 @@ impl Hittable for Sphere {
         let mut root = (-half_b - sqrtd) / a;
         if !ray_t.contains(root) {
             root = (-half_b + sqrtd) / a;
-            if !ray_t.contains(root){
+            if !ray_t.contains(root) {
                 return false;
             }
         }

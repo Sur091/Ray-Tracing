@@ -1,7 +1,7 @@
 use crate::{color::Color, ray::Point};
 
-mod solid_color;
 mod checker;
+mod solid_color;
 
 #[derive(Debug, Clone)]
 pub enum Texture {
@@ -12,10 +12,8 @@ pub enum Texture {
 impl Default for Texture {
     fn default() -> Self {
         Self::solid_color(Color::default())
-        
     }
 }
-
 
 impl Texture {
     pub fn value(&self, u: f32, v: f32, p: &Point) -> Color {

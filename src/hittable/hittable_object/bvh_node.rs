@@ -13,7 +13,7 @@ pub struct BvhNode {
 
 impl BvhNode {
     pub fn new(mut list: HittableList) -> Self {
-        Self::new_from_vector(list.objects())
+        return Self::new_from_vector(list.objects());
     }
     pub fn new_from_vector(src_objects: &mut [HittableObject]) -> Self {
         // let mut objects = src_objects;

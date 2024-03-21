@@ -15,7 +15,7 @@ impl Lambertian {
         Self::new_with_texture(Texture::solid_color(a))
     }
     pub const fn new_with_texture(a: Texture) -> Self {
-        Self {albedo: a}
+        Self { albedo: a }
     }
 }
 

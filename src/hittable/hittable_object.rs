@@ -20,7 +20,7 @@ impl HittableObject {
         Self::Sphere(sphere::Sphere::new(center, center, radius, mat, bbox))
     }
     pub fn bvh_node(src_objects: &mut [Self]) -> Self {
-        HittableObject::BvhNode(bvh_node::BvhNode::new_from_vector(src_objects))
+        Self::BvhNode(bvh_node::BvhNode::new_from_vector(src_objects))
     }
     pub fn moving_sphere(center1: Point, center2: Point, radius: f32, mat: Material) -> Self {
         let rvec = Direction::new(radius, radius, radius);
@@ -41,8 +41,8 @@ impl Hittable for HittableObject {
     }
     fn bounding_box(&self) -> &Aabb {
         match self {
-            Self::Sphere(sphere) => sphere.bounding_box(),
-            Self::BvhNode(bvh_node) => bvh_node.bounding_box(),
+            Self::Sphere(sphere) => return sphere.bounding_box(),
+            Self::BvhNode(bvh_node) => return bvh_node.bounding_box(),
         }
     }
 }
