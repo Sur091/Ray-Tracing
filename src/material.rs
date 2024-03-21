@@ -1,7 +1,7 @@
-
 use crate::color::Color;
 use crate::hittable::HitRecord;
 use crate::ray::Ray;
+use crate::texture::Texture;
 
 mod dielectric;
 mod lambertian;
@@ -32,7 +32,10 @@ impl Default for Material {
 
 impl Material {
     pub const fn lambertian(a: Color) -> Self {
-        Self::Lambertian(lambertian::Lambertian::new(&a))
+        Self::Lambertian(lambertian::Lambertian::new(a))
+    }
+    pub const fn lambertian_with_texture(a: Texture) -> Self {
+        Self::Lambertian(lambertian::Lambertian::new_with_texture(a))
     }
     pub fn metal(a: Color, f: f32) -> Self {
         Self::Metal(metal::Metal::new(&a, f))

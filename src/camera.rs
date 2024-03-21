@@ -100,7 +100,8 @@ impl Camera {
         let theta = self.vfov.to_radians();
         let h = f32::tan(theta / 2.0);
         let viewport_height = 2.0 * h * self.focus_dist;
-        let viewport_width = viewport_height * (f32::from(self.image_width) / f32::from(self.image_height));
+        let viewport_width =
+            viewport_height * (f32::from(self.image_width) / f32::from(self.image_height));
         // self.center = Point::new(0.0, 0.0, 0.0);
 
         // Calculate the u,v,w unit basis vectors for the camera coordinate frame

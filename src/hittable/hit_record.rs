@@ -7,6 +7,8 @@ pub struct HitRecord {
     pub normal: Direction,
     pub mat: Material,
     pub t: f32,
+    pub u: f32,
+    pub v: f32,
     pub front_face: bool,
 }
 

@@ -1,5 +1,3 @@
-use std::rc::Rc;
-
 use super::HittableObject;
 use crate::aabb::Aabb;
 use crate::hittable::{HitRecord, Hittable, HittableList};
@@ -8,8 +6,8 @@ use crate::random;
 
 #[derive(Clone)]
 pub struct BvhNode {
-    left: Rc<HittableObject>,
-    right: Rc<HittableObject>,
+    left: Box<HittableObject>,
+    right: Box<HittableObject>,
     bbox: Aabb,
 }
 
@@ -25,37 +23,33 @@ impl BvhNode {
             return a
                 .bounding_box()
                 .axis(axis_index)
-                .min()
+                .min
                 .partial_cmp(&b.bounding_box().axis(axis_index).min)
                 .unwrap();
         };
 
-        let left;
-        let right;
-
-        if src_objects.len() == 1 {
-            left = src_objects[0].clone();
-            right = src_objects[0].clone();
+        let (left, right) = if src_objects.len() == 1 {
+            (src_objects[0].clone(), src_objects[0].clone())
         } else if src_objects.len() == 2 {
             if comparator(&src_objects[0], &src_objects[1]) == std::cmp::Ordering::Less {
-                left = src_objects[0].clone();
-                right = src_objects[1].clone();
+                (src_objects[0].clone(), src_objects[1].clone())
             } else {
-                left = src_objects[1].clone();
-                right = src_objects[0].clone();
+                (src_objects[1].clone(), src_objects[0].clone())
             }
         } else {
             src_objects.sort_unstable_by(comparator);
-
             let mid = src_objects.len() / 2;
-            left = HittableObject::BvhNode(Self::new_from_vector(&mut src_objects[..mid]));
-            right = HittableObject::BvhNode(Self::new_from_vector(&mut src_objects[mid..]));
-        }
+
+            (
+                HittableObject::bvh_node(&mut src_objects[..mid]),
+                HittableObject::bvh_node(&mut src_objects[mid..]),
+            )
+        };
 
         let bbox = Aabb::new_with_boxes(left.bounding_box(), right.bounding_box());
         Self {
-            left: Rc::new(left),
-            right: Rc::new(right),
+            left: Box::new(left),
+            right: Box::new(right),
             bbox,
         }
     }
@@ -75,7 +69,7 @@ impl Hittable for BvhNode {
         let hit_left = self.left.hit(r, ray_t, rec);
         let hit_right = self.right.hit(
             r,
-            Interval::new(ray_t.min(), if hit_left { rec.t } else { ray_t.max() }),
+            Interval::new(ray_t.min, if hit_left { rec.t } else { ray_t.max }),
             rec,
         );
         hit_left || hit_right

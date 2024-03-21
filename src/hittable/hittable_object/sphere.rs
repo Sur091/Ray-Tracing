@@ -29,6 +29,14 @@ impl Sphere {
     fn center(&self, time: f32) -> Point {
         self.center1 + self.center_vec * time
     }
+
+    fn get_sphere_uv(p: &Point, u: &mut f32, v: &mut f32) {
+        let theta = f32::acos(-p.y);
+        let phi = f32::atan2(-p.z, p.x) + std::f32::consts::PI;
+
+        *u = phi / std::f32::consts::TAU;
+        *v = theta / std::f32::consts::PI;
+    }
 }
 
 impl Hittable for Sphere {
@@ -53,9 +61,9 @@ impl Hittable for Sphere {
 
         // Find the nearest root that lies in the acceptable region
         let mut root = (-half_b - sqrtd) / a;
-        if root <= ray_t.min() || ray_t.max() <= root {
+        if !ray_t.contains(root) {
             root = (-half_b + sqrtd) / a;
-            if root <= ray_t.min() || ray_t.max() <= root {
+            if !ray_t.contains(root){
                 return false;
             }
         }
@@ -64,6 +72,7 @@ impl Hittable for Sphere {
         rec.p = ray.at(rec.t);
         let outward_normal = (rec.p - center) / self.radius;
         rec.set_face_normal(ray, &outward_normal);
+        Self::get_sphere_uv(&outward_normal, &mut rec.u, &mut rec.v);
         rec.mat = self.mat.clone();
 
         true

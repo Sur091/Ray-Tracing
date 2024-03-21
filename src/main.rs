@@ -3,7 +3,7 @@
     clippy::restriction,
     clippy::pedantic,
     clippy::nursery,
-    clippy::cargo,
+    clippy::cargo
 )]
 mod aabb;
 mod camera;
@@ -15,24 +15,30 @@ mod random;
 mod ray;
 mod utility;
 mod vec3;
+mod texture;
 
 use camera::Camera;
 use color::Color;
-use hittable::{BvhNode, HittableList, HittableObject};
+use hittable::{HittableList, HittableObject};
 use material::Material;
 use rand::random;
 use ray::{Direction, Point};
+use texture::Texture;
 
-fn main() {
+fn random_spheres() {
     // World
     let mut world = HittableList::default();
 
-    let ground_material = Material::lambertian(Color::new(0.5, 0.5, 0.5));
-    world.add(HittableObject::sphere(
-        Point::new(0.0, -1000.0, 0.0),
-        1000.0,
-        ground_material,
-    ));
+    let checker = Texture::checker(0.32, Color::new(0.2, 0.3, 0.1), Color::new(0.9, 0.9, 0.9));
+
+    world.add(HittableObject::sphere(Point::new(0.0, -1000.0, 0.0), 1000.0, Material::lambertian_with_texture(checker)));
+
+    // let ground_material = Material::lambertian(Color::new(0.5, 0.5, 0.5));
+    // world.add(HittableObject::sphere(
+    //     Point::new(0.0, -1000.0, 0.0),
+    //     1000.0,
+    //     ground_material,
+    // ));
 
     for a in -11..11i8 {
         for b in -11..11i8 {
@@ -92,12 +98,12 @@ fn main() {
         material3,
     ));
 
-    let world = HittableObject::BvhNode(BvhNode::new(world));
+    let world = HittableObject::bvh_node(world.objects());
 
     let mut cam = Camera::default();
     cam.aspect_ratio = 16.0 / 9.0;
-    cam.image_width = 400;
-    cam.samples_per_pixel = 100;
+    cam.image_width = 1200;
+    cam.samples_per_pixel = 500;
     cam.max_depth = 50;
 
     cam.vfov = 20.0;
@@ -109,4 +115,45 @@ fn main() {
     cam.focus_dist = 10.0;
 
     cam.render(&world);
+}
+
+fn two_spheres() {
+    let mut world = HittableList::default();
+
+    let checker = Texture::checker(0.8, Color::new(0.2, 0.3, 0.1), Color::new(0.9,0.9,0.9));
+
+    world.add(HittableObject::sphere(Point::new(0.0, -10.0, 0.0), 10.0, Material::lambertian_with_texture(checker.clone())));
+    world.add(HittableObject::sphere(Point::new(0.0, 10.0, 0.0), 10.0, Material::lambertian_with_texture(checker)));
+
+
+    let world = HittableObject::bvh_node(world.objects());
+
+    let mut cam = Camera::default();
+
+    cam.aspect_ratio = 16.0 / 9.0;
+    cam.image_width = 400u16;
+    cam.samples_per_pixel = 100u16;
+    cam.max_depth = 50u16;
+
+    cam.vfov = 20.0;
+    cam.look_from = Point::new(13.0, 2.0, 3.0);
+    cam.look_at = Point::new(0.0,0.0,0.0);
+    cam.vup = Direction::new(0.0,1.0,0.0);
+
+    cam.defocus_angle = 0.0;
+
+    cam.render(&world);
+}
+fn main() {
+    enum Scene {
+        TwoSpheres,
+        RandomSpheres,
+    }
+
+    let scence = Scene::RandomSpheres;
+
+    match scence {
+        Scene::RandomSpheres => random_spheres(),
+        Scene::TwoSpheres => two_spheres(), 
+    }
 }

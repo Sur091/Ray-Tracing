@@ -3,15 +3,19 @@ use crate::hittable::HitRecord;
 use crate::material::Scatter;
 use crate::random;
 use crate::ray::{Point, Ray};
+use crate::texture::Texture;
 
 #[derive(Debug, Clone, Default)]
 pub struct Lambertian {
-    albedo: Color,
+    albedo: Texture,
 }
 
 impl Lambertian {
-    pub const fn new(a: &Color) -> Self {
-        Self { albedo: *a }
+    pub const fn new(a: Color) -> Self {
+        Self::new_with_texture(Texture::solid_color(a))
+    }
+    pub const fn new_with_texture(a: Texture) -> Self {
+        Self {albedo: a}
     }
 }
 
@@ -31,7 +35,7 @@ impl Scatter for Lambertian {
         }
 
         *scattered = Ray::new(rec.p, scatter_direction, r_in.time());
-        *attenuation = self.albedo;
+        *attenuation = self.albedo.value(rec.u, rec.v, &rec.p);
         true
     }
 }
